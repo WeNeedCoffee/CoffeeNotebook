@@ -285,9 +285,9 @@ function CreateNB1()
 		NBUI.NB1MovePageDown_Button:SetPressedTexture("esoui/art/buttons/gamepad/gp_downarrow.dds")
 ---------------------------------------------------------------------------------------------------	
 	NBUI.NB1UndoPage_Button = WINDOW_MANAGER:CreateControl("NBUI_NB1UndoPage_Button", NBUI.NB1LeftPage_ScrollContainer.scrollChild, CT_BUTTON)
-		NBUI.NB1UndoPage_Button:SetAnchor(RIGHT, NBUI.NB1SelectedPage_Button, RIGHT, -30, 0)
+		NBUI.NB1UndoPage_Button:SetAnchor(RIGHT, NBUI.NB1SelectedPage_Button, RIGHT, -16, 0)
 		NBUI.NB1UndoPage_Button:SetClickSound(SOUNDS.BOOK_PAGE_TURN)
-		NBUI.NB1UndoPage_Button:SetDimensions(32, 35)
+		NBUI.NB1UndoPage_Button:SetDimensions(30, 35)
 		NBUI.NB1UndoPage_Button:SetDrawLayer(1)		
 		NBUI.NB1UndoPage_Button:SetDrawLevel(1)
 		NBUI.NB1UndoPage_Button:SetDrawTier(0)
@@ -402,7 +402,7 @@ function CreateNB1()
 					NBUI.NB1UndoPage_Button:SetHidden(true)				
 				end
 			end)
-		NBUI.NB1RightPage_Title:SetMaxInputChars(33)
+		NBUI.NB1RightPage_Title:SetMaxInputChars(50)
 		NBUI.NB1RightPage_Title:SetHidden(true)
 ---------------------------------------------------------------------------------------------------		
 	NBUI.NB1RightPage_ScrollContainer = WINDOW_MANAGER:CreateControlFromVirtual("NBUI_NB1RightPage_ScrollContainer", NBUI.NB1MainWindow, "ZO_ScrollContainer")
@@ -510,6 +510,7 @@ function CreateNB1()
 			local textLen = #text
 			if textLen > savedVarsStringMax then
 				NBUI.NB1SavePage_Button:SetHidden(true)
+				NBUI.NB1UndoPage_Button:SetHidden(false)	
 			end
 			NBUI.NBUI_NB1RightPage_CharacterCounter:SetText(textLen .. ' / ' .. savedVarsStringMax)
 			NBUI.NBUI_NB1RightPage_CharacterCounter:SetHidden(false)
@@ -711,20 +712,34 @@ function NBUI.NB1NewTitle(self)
 		return NBUI.db.NB1_NewPageTitle
 	end
 
+	local osT = GetTimeStamp()
+    local tst = cl.tm.GetTST(osT)
+    local lore, real
+    local year, month, day = 0, 0, 0
+    local hour, minute, second
+	
+    if cl.st.ShowLoreDate() then
+        year, month, day = cl.tm.GetLoreDate()
+    elseif cl.st.ShowFLDate() then
+        year, month, day = cl.tm.GetFakeLoreDate()
+    end
+
+    hour, minute, second = tst[1], tst[2], tst[3]
+    lore = cl.vi.ParseFormat(year, month, day, hour, minute, second, true)
 	-- Bug catcher.
-	if not os or not os.date then return GetString(SI_NBUI_NEWBUTTON_TITLE) end
-
-	local h = os.date("%I")
-	local m = ":" .. os.date("%M")
-	local pm = os.date("%p")
+	--if not os or not os.date then return GetString(SI_NBUI_NEWBUTTON_TITLE) end
+--
+	--local h = os.date("%I")
+	--local m = ":" .. os.date("%M")
+--	local pm = os.date("%p")
 
 	-- Bug catcher.
-	if not h or not m or not pm then return GetString(SI_NBUI_NEWBUTTON_TITLE) end
+--	if not h or not m or not pm then return GetString(SI_NBUI_NEWBUTTON_TITLE) end
 
-	local t = tonumber(h) .. m .. pm:lower()
-	local date = tonumber(os.date("%d"))
+--	local t = tonumber(h) .. m .. pm:lower()
+--	local date = tonumber(os.date("%d"))
 	-- e.g. 9:39pm Wed', May 2, '18
-	local title = os.date(t .. " %a', %B " .. date .. ", '%y")
+	local title = lore --os.date(t .. " %a', %B " .. date .. ", '%y")
 	return title
 end
 
@@ -778,7 +793,7 @@ function NBUI.NB1SavePage(self)
 	end
 	
 	if currentlyViewing == nil then	--if this was a new page
-		table.insert(NBUI.db.NB1Pages, {["title"] = safe_titleText, ["text"]=safe_pageText})
+		table.insert(NBUI.db.NB1Pages, {["title"] = safe_titleText, ["text"]=safe_pageText,["date"]=GetTimeStamp()})
 		currentlyViewing = #NBUI.db.NB1Pages
 		NBUI.NB1SelectedPage_Button:SetHidden(false)
 		NBUI.NB1SelectedPage_Button:ClearAnchors()
